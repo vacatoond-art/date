@@ -389,7 +389,7 @@ function final(){
   document.body.dataset.scene="final";
   const s=seen();
   app.innerHTML=`<section class="scene"><div class="wrap">
-    <h1>10 ЛЕТ</h1>
+    <h1 id="ft">ФИНАЛ</h1>
     <div class="step" id="s1">
       <p class="lead">Шесть цифр. Собери из них код.<br>Подсказка: это день, который мы оба помним.</p>
       <div class="code" id="code">${ORDER.map((k,i)=>`<div class="cell" style="--c:#1f1a1c"><input id="d${i}" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="off" aria-label="Цифра ${i+1}"></div>`).join("")}</div>
@@ -415,7 +415,7 @@ function final(){
   });
   $("#open").onclick=check;
   function check(){const v=ins.map(x=>x.value).join("");if(v.length<6){$("#err").textContent="Заполни все шесть клеток.";return}
-    if(v===ORDER.map(k=>C[k].d).join("")){hide("#s1");show("#s2");confetti()}
+    if(v===ORDER.map(k=>C[k].d).join("")){$("#ft").textContent="Ого, правда вспомнила?";hide("#s1");show("#s2");confetti()}
     else{$("#err").textContent="Не тот код. Подумай, какой день мы оба помним.";const c=$("#code");c.classList.remove("shake");void c.offsetWidth;c.classList.add("shake")}}
 }
 function confetti(){
