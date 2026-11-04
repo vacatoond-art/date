@@ -415,7 +415,7 @@ function final(){
   });
   $("#open").onclick=check;
   function check(){const v=ins.map(x=>x.value).join("");if(v.length<6){$("#err").textContent="Заполни все шесть клеток.";return}
-    if(v===ORDER.map(k=>C[k].d).join("")){$("#ft").textContent="Ого, правда вспомнила?";hide("#s1");show("#s2");confetti()}
+    if(v===ORDER.map(k=>C[k].d).join("")){$("#ft").textContent="Ого, ты правда помнишь наш день? 🥹";hide("#s1");show("#s2");confetti()}
     else{$("#err").textContent="Не тот код. Подумай, какой день мы оба помним.";const c=$("#code");c.classList.remove("shake");void c.offsetWidth;c.classList.add("shake")}}
 }
 function confetti(){
