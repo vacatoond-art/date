@@ -158,8 +158,8 @@ body[data-scene=final]{background:linear-gradient(180deg,#fbf8f4,#f5eee8)}
 <script>
 (function(){
 const C = {
-  black:{name:"Чёрный", acc:"чёрную", c:"#141414", d:1},
-  red:{name:"Красный", acc:"красную", c:"#c21f3e", d:0},
+  black:{name:"Чёрный", acc:"чёрную", c:"#141414", d:0},
+  red:{name:"Красный", acc:"красную", c:"#c21f3e", d:6},
   pink:{name:"Розовый", acc:"розовую", c:"#f49ac1", d:1},
   green:{name:"Зелёный", acc:"зелёную", c:"#1c5a46", d:0},
   silver:{name:"Серебристый", acc:"серебристую", c:"#b8c0c8", d:2},
@@ -200,7 +200,7 @@ function black(){
       <p class="lead">Доступ почти открыт. Сотри плёнку пальцем.</p>
       <div class="scratch">
         <div class="under">
-          <p class="msg">Подтверждено: опасно красива.<br>Тебе положено что-то чёрное и тонкое. И что-то чёрное и сладкое.</p>
+          <p class="msg">Подтверждено: опасно красива.<br>Теперь можно открывать. Только осторожно: внутри кое-что опасное.</p>
           <div id="dg"></div>
         </div>
         <canvas id="sc" aria-label="Защитная плёнка, сотри пальцем"></canvas>
@@ -243,8 +243,7 @@ function red(){
     <div class="step" id="s2" hidden>
       <div class="bpm">∞<span>BPM</span></div>
       <p class="msg">Пульс: бесконечность.<br>Диагноз: влюблённость. Инкубационный период — 10 лет.</p>
-      <div class="candle" id="candle"><div class="wax"></div><div class="wick"></div><div class="flame"></div></div>
-      <button class="btn" id="light">Зажечь свечу</button>
+      <button class="btn" id="light">Выписать рецепт</button>
       <div id="dg"></div>
     </div>
   </div></section>`;
@@ -257,7 +256,7 @@ function red(){
   hold.addEventListener("contextmenu",e=>e.preventDefault());
   hold.addEventListener("keydown",e=>{if((e.key===" "||e.key==="Enter")&&!e.repeat){t0=performance.now();raf=requestAnimationFrame(tick)}});
   hold.addEventListener("keyup",stop);
-  $("#light").onclick=function(){$("#candle").classList.add("lit");this.remove();$("#dg").outerHTML=`<p class="lead">Эта свеча — чтобы дома пахло так же тепло, как рядом с тобой. А красный бархат — просто потому что ты сладкая.</p>`+digit("red")};
+  $("#light").onclick=function(){this.remove();$("#dg").outerHTML=`<p class="msg">Рецепт: открыть упаковку. Принимать вечером, вместе со мной.</p>`+digit("red")};
 }
 
 /* ---------- PINK ---------- */
@@ -273,7 +272,7 @@ function pink(){
     </div>
     <div class="swatches" id="sws">${P.map(([c,n],i)=>`<button class="sw" style="background:${c}" data-c="${c}" aria-label="${n}"></button>`).join("")}</div>
     <div class="step" id="s3" hidden>
-      <p class="msg">Вот так выглядим мы.<br>Мягко, ярко и немного липко, как моти. А тапочки — чтобы ходить по дому так же мягко, как ты ходишь по моему сердцу.</p>
+      <p class="msg">Вот так выглядим мы.<br>А внутри — кое-что очень мягкое. Почти такое же, как ты.</p>
       <div id="dg"></div>
     </div>
   </div></section>`;
@@ -303,7 +302,7 @@ function green(){
     </div>
     <div class="step" id="s3" hidden>
       <div class="stamp">ВИНОВНА</div>
-      <p class="msg">Приговор: пожизненно нежные руки.<br>И половинка авокадо. Вторая половинка — я.</p>
+      <p class="msg">Приговор: пожизненная забота о тебе.<br>Вещественные доказательства — внутри.</p>
       <div id="dg"></div>
     </div>
   </div></section>`;
@@ -338,10 +337,9 @@ function silver(){
     <div class="step" id="s3" hidden>
       <svg class="pendant" viewBox="0 0 200 230" aria-hidden="true">
         <defs><linearGradient id="chromeG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8d96a1"/><stop offset=".4" stop-color="#ffffff"/><stop offset=".7" stop-color="#a8b0ba"/><stop offset="1" stop-color="#e9edf1"/></linearGradient></defs>
-        <path class="chain" d="M10 10 C 40 150, 160 150, 190 10"/>
-        <g class="drop"><circle cx="100" cy="128" r="4" fill="none" stroke="url(#chromeG)" stroke-width="2"/><path d="M100 140 l9 21 21 9 -21 9 -9 21 -9 -21 -21 -9 21 -9z" fill="url(#chromeG)"/></g>
+        <g class="drop"><path d="M100 140 l9 21 21 9 -21 9 -9 21 -9 -21 -21 -9 21 -9z" fill="url(#chromeG)"/></g>
       </svg>
-      <p class="msg">Теперь наша звезда будет висеть у тебя на шее. Пусть всегда будет рядом с сердцем.</p>
+      <p class="msg">Теперь она твоя. Открывай: кое-что сияющее уже рядом.</p>
       <div id="dg"></div>
     </div>
   </div></section>`;
@@ -399,7 +397,7 @@ function final(){
       <button class="btn" id="open" style="background:#1f1a1c;color:#fbf8f4">Открыть</button>
     </div>
     <div class="step" id="s2" hidden>
-      <div class="numline">10 · 10 · 26<small>10 лет дружбы · 10 из 10 · 2026, наш год</small></div>
+      <div class="numline">06 · 10 · 26<small>6 октября 2026. День, с которого всё началось.</small></div>
       <div class="letter">
         <p>Мы знакомы больше десяти лет. Все шутят, что надо было столько дружить, чтобы дойти до этого. А я думаю, что просто ждал, пока стану уверен. Теперь уверен.</p>
         <p>Сегодня шесть цветов — и все они про тебя: опасно красивая, моё бесконечное сердцебиение, самая мягкая, самая стильная, моя звезда и моё солнце.</p>
