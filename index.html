@@ -174,7 +174,7 @@ const $=s=>app.querySelector(s);
 
 function digit(k){
   mark(k);
-  return `<div class="digit"><span class="dlab">Цифра · ${C[k].name}</span><b>${C[k].d}</b><small>Запомни её. В финале она встанет в ${C[k].acc} клетку.</small></div>`;
+  return `<div class="digit"><span class="dlab">Твоя цифра</span><b>${C[k].d}</b><small>Запомни её. Она понадобится в финале.</small></div>`;
 }
 function show(id){const el=$(id);el.hidden=false;return el}
 function hide(id){$(id).hidden=true}
@@ -391,17 +391,19 @@ function final(){
   app.innerHTML=`<section class="scene"><div class="wrap">
     <h1>10 ЛЕТ</h1>
     <div class="step" id="s1">
-      <p class="lead">Шесть цветов, шесть цифр. Впиши каждую в клетку своего цвета.</p>
-      <div class="code" id="code">${ORDER.map((k,i)=>`<div class="cell" style="--c:${C[k].c}"><input id="d${i}" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="off" aria-label="${C[k].name}"><label for="d${i}">${C[k].name.slice(0,4)}</label><span class="seen ${s[k]?"on":""}"></span></div>`).join("")}</div>
+      <p class="lead">Шесть цифр. Собери из них код.<br>Подсказка: это день, который мы оба помним.</p>
+      <div class="code" id="code">${ORDER.map((k,i)=>`<div class="cell" style="--c:#1f1a1c"><input id="d${i}" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="off" aria-label="Цифра ${i+1}"></div>`).join("")}</div>
       <p class="err" id="err"></p>
       <button class="btn" id="open" style="background:#1f1a1c;color:#fbf8f4">Открыть</button>
     </div>
     <div class="step" id="s2" hidden>
-      <div class="numline">06 · 10 · 26<small>6 октября 2026. День, с которого всё началось.</small></div>
+      <div class="numline">06 · 10 · 26<small>6 октября 2026</small></div>
       <div class="letter">
-        <p>Мы знакомы больше десяти лет. Все шутят, что надо было столько дружить, чтобы дойти до этого. А я думаю, что просто ждал, пока стану уверен. Теперь уверен.</p>
-        <p>Сегодня шесть цветов — и все они про тебя: опасно красивая, моё бесконечное сердцебиение, самая мягкая, самая стильная, моя звезда и моё солнце.</p>
-        <p>Спасибо, что ты есть. Спасибо за эти десять лет и за всё, что будет дальше.</p>
+        <p>Наша история началась больше десяти лет назад. Но именно в этот день она перешла на тот уровень, который каждый из нас, наверное, загадывал и ждал всю жизнь.</p>
+        <p>Десять лет ты была рядом. Смеялась над моими шутками, знала меня лучше всех и была моим человеком задолго до того, как мы это поняли.</p>
+        <p>Мне нравится, как ты смеёшься. Как ты зовёшь меня Питерским. Как рядом с тобой можно быть собой и ничего не бояться.</p>
+        <p>Я хочу ещё очень много таких вечеров. Много глупых шуток, много тёплых утр и тебя рядом.</p>
+        <p>Спасибо, что ты есть. Ты лучшее, что со мной случалось.</p>
         <p class="sig">Твой Питерский</p>
       </div>
     </div>
@@ -414,7 +416,7 @@ function final(){
   $("#open").onclick=check;
   function check(){const v=ins.map(x=>x.value).join("");if(v.length<6){$("#err").textContent="Заполни все шесть клеток.";return}
     if(v===ORDER.map(k=>C[k].d).join("")){hide("#s1");show("#s2");confetti()}
-    else{$("#err").textContent="Не тот код. Проверь, что каждая цифра стоит в клетке своего цвета.";const c=$("#code");c.classList.remove("shake");void c.offsetWidth;c.classList.add("shake")}}
+    else{$("#err").textContent="Не тот код. Подумай, какой день мы оба помним.";const c=$("#code");c.classList.remove("shake");void c.offsetWidth;c.classList.add("shake")}}
 }
 function confetti(){
   if(matchMedia("(prefers-reduced-motion: reduce)").matches)return;
