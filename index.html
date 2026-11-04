@@ -1,0 +1,444 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
+<title>Цветное свидание</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Manrope:wght@400;600;700&family=Caveat:wght@500;700&display=swap">
+<style>
+/* Layout: one phone-sized scene per colour, centred column, each scene its own fixed colour world (single-look by design). */
+:root{
+  --f-display:"Unbounded","Arial Black",system-ui,sans-serif;
+  --f-body:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-hand:"Caveat","Segoe Print","Comic Sans MS",cursive;
+  --bg:#fbf8f4; --fg:#1f1a1c; --accent:#b8336a; --muted:#7a6f73; --card:#ffffff; --line:rgba(0,0,0,.12);
+  color-scheme:light;
+}
+html,body{height:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:16px;line-height:1.5;-webkit-tap-highlight-color:transparent;transition:background .6s}
+body[data-scene=black]{--bg:#0d0b0c;--fg:#f4eef0;--accent:#e0435f;--muted:#9a8f93;--card:#1a1618;--line:rgba(255,255,255,.12);color-scheme:dark}
+body[data-scene=red]{--bg:#4a0a17;--fg:#ffe9ec;--accent:#ff5b78;--muted:#e3a4ae;--card:#5e1222;--line:rgba(255,255,255,.14);color-scheme:dark}
+body[data-scene=pink]{--bg:#f8c6dc;--fg:#7a1f4b;--accent:#b8336a;--muted:#a3527a;--card:#fff2f8;--line:rgba(122,31,75,.18);color-scheme:light}
+body[data-scene=green]{--bg:#0f3a2e;--fg:#e3f1e6;--accent:#b9e2c3;--muted:#8fbfa0;--card:#14473a;--line:rgba(185,226,195,.3);color-scheme:dark}
+body[data-scene=silver]{--bg:#0e1015;--fg:#dfe3e8;--accent:#c9d0d8;--muted:#8a929c;--card:#181b22;--line:rgba(220,226,232,.18);color-scheme:dark}
+body[data-scene=yellow]{--bg:#fde79a;--fg:#6b4300;--accent:#d98a00;--muted:#9a6a12;--card:#fff6d1;--line:rgba(107,67,0,.2);color-scheme:light}
+body[data-scene=silver]{background:radial-gradient(120% 80% at 50% 0%,#252a34 0%,#0e1015 60%) fixed,var(--bg)}
+
+.scene{min-height:100%;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;text-align:center;padding-block:40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{width:100%;max-width:380px;display:flex;flex-direction:column;align-items:center;gap:18px}
+.icon{width:52px;height:52px;color:var(--accent)}
+h1{font-family:var(--f-display);font-weight:700;font-size:clamp(24px,7vw,30px);letter-spacing:.02em;line-height:1.15;margin:0;text-wrap:balance}
+.lead{color:var(--muted);margin:0;max-width:32ch;text-wrap:balance}
+p{margin:0}
+.btn{font:700 15px/1 var(--f-body);letter-spacing:.08em;text-transform:uppercase;border:0;border-radius:999px;padding:18px 30px;cursor:pointer;background:var(--accent);color:var(--bg);transition:transform .15s, opacity .3s;touch-action:manipulation}
+.btn:active{transform:scale(.96)}
+.btn.ghost{background:transparent;color:var(--fg);box-shadow:inset 0 0 0 2px var(--accent)}
+.btn:focus-visible,input:focus-visible,.sw:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.step[hidden]{display:none}
+.step{display:flex;flex-direction:column;align-items:center;gap:18px;width:100%;animation:rise .5s ease both}
+@keyframes rise{from{transform:translateY(10px);opacity:.3}to{transform:none;opacity:1}}
+
+.digit{display:flex;flex-direction:column;align-items:center;gap:6px;padding:20px 26px;border-radius:22px;background:var(--card);box-shadow:0 0 0 1px var(--line);animation:pop .6s cubic-bezier(.2,1.4,.4,1) both}
+.digit .dlab{font:600 12px/1 var(--f-body);letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.digit b{font:700 72px/1 var(--f-display);color:var(--accent);font-variant-numeric:tabular-nums}
+.digit small{font-size:13px;color:var(--muted);max-width:26ch}
+@keyframes pop{from{transform:scale(.6);opacity:0}to{transform:none;opacity:1}}
+.msg{font-size:17px;max-width:30ch;text-wrap:balance}
+.hand{font-family:var(--f-hand);font-size:26px;line-height:1.2}
+
+/* black */
+.scratch{position:relative;width:100%;max-width:320px;border-radius:22px;overflow:hidden;background:var(--card);box-shadow:0 0 0 1px var(--line)}
+.scratch .under{padding:28px 22px;display:flex;flex-direction:column;align-items:center;gap:12px}
+.scratch canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:crosshair;transition:opacity .6s}
+
+/* red */
+.ecg{width:100%;max-width:330px;height:70px}
+.ecg path{fill:none;stroke:var(--accent);stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:140 400;animation:ecg 2.2s linear infinite}
+@keyframes ecg{from{stroke-dashoffset:540}to{stroke-dashoffset:0}}
+.hold{position:relative;width:150px;height:150px;border-radius:50%;border:0;background:transparent;cursor:pointer;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.hold svg{position:absolute;inset:0;width:100%;height:100%}
+.hold .ring{fill:none;stroke:var(--line);stroke-width:6}
+.hold .prog{fill:none;stroke:var(--accent);stroke-width:6;stroke-linecap:round;transform:rotate(-90deg);transform-origin:50% 50%;stroke-dasharray:440;stroke-dashoffset:440}
+.hold .heart{position:absolute;inset:38px;color:var(--accent);transition:transform .1s}
+.bpm{font:700 40px/1 var(--f-display);font-variant-numeric:tabular-nums;color:var(--fg)}
+.bpm span{font:600 13px var(--f-body);letter-spacing:.14em;color:var(--muted);margin-left:6px}
+.candle{position:relative;width:70px;height:120px}
+.candle .wax{position:absolute;bottom:0;left:15px;width:40px;height:78px;border-radius:8px 8px 4px 4px;background:linear-gradient(90deg,#c21f3e,#ff5b78 55%,#b01b37)}
+.candle .wick{position:absolute;bottom:78px;left:34px;width:2px;height:10px;background:#2a0a10}
+.candle .flame{position:absolute;bottom:86px;left:24px;width:22px;height:34px;border-radius:50% 50% 45% 45%/60% 60% 40% 40%;background:radial-gradient(circle at 50% 70%,#fff6c9 0 20%,#ffc94d 45%,#ff7a2e 75%,transparent 76%);transform-origin:50% 100%;opacity:0;transform:scale(.2);transition:opacity .4s,transform .5s}
+.candle.lit .flame{opacity:1;transform:none;animation:flick 1.4s ease-in-out infinite alternate .5s}
+.candle.lit::after{content:"";position:absolute;left:-30px;right:-30px;top:-20px;height:110px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,190,90,.35),transparent);pointer-events:none}
+@keyframes flick{0%{transform:scale(1) rotate(-2deg)}50%{transform:scale(1.06,.94) rotate(2deg)}100%{transform:scale(.96,1.05) rotate(-1deg)}}
+
+/* pink */
+.swatches{display:flex;flex-wrap:wrap;gap:12px;justify-content:center}
+.sw{width:52px;height:52px;border-radius:50%;border:3px solid #fff;cursor:pointer;box-shadow:0 4px 14px rgba(122,31,75,.18);transition:transform .2s}
+.sw:active{transform:scale(.9)}
+.sw[disabled]{opacity:.25;cursor:default}
+.mix{position:relative;width:240px;height:200px}
+.blob{position:absolute;top:50px;width:100px;height:100px;border-radius:50%;opacity:0;transition:all 1s cubic-bezier(.5,0,.3,1);filter:blur(1px)}
+.blob.a{left:10px}.blob.b{right:10px}
+.blob.on{opacity:.9}
+.mix.merged .blob{left:70px;right:auto;transform:scale(.6);opacity:0}
+.mix .us{position:absolute;inset:0;margin:auto;width:180px;height:180px;opacity:0;transform:scale(.4);transition:all .8s cubic-bezier(.2,1.4,.4,1) .7s}
+.mix.merged .us{opacity:1;transform:none}
+.names{display:flex;justify-content:space-between;width:240px;font:600 13px var(--f-body);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+
+/* green */
+.case{width:100%;max-width:340px;box-sizing:border-box;padding:22px;border-radius:18px;border:1.5px solid var(--line);text-align:left;display:flex;flex-direction:column;gap:10px}
+.case .no{font:600 12px var(--f-body);letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.choices{position:relative;display:flex;gap:12px;justify-content:center;flex-wrap:wrap;min-height:70px;width:100%}
+#notGuilty{transition:transform .25s}
+.stamp{font:700 30px/1 var(--f-display);color:#ff8a8a;border:4px solid #ff8a8a;padding:10px 18px;border-radius:10px;transform:rotate(-10deg);letter-spacing:.06em;animation:stamp .45s cubic-bezier(.3,1.6,.5,1) both}
+@keyframes stamp{from{transform:rotate(-10deg) scale(2.4);opacity:0}to{transform:rotate(-10deg) scale(1);opacity:1}}
+.shake{animation:shake .4s}
+@keyframes shake{20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}}
+
+/* silver */
+.chrome{background:linear-gradient(100deg,#8d96a1 0%,#f6f8fb 28%,#a8b0ba 50%,#ffffff 68%,#7d8590 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.sky{width:100%;max-width:340px;aspect-ratio:300/340;max-width:100%}
+.sky svg{width:100%;height:100%;display:block}
+.sky .st{fill:#e8ecf1}
+.sky .tw{animation:tw 3s ease-in-out infinite}
+@keyframes tw{50%{opacity:.35}}
+.sky .ours{animation:ours 1.8s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes ours{50%{transform:scale(1.35)}}
+.sky .found{animation:none;transform:scale(2.2);transition:transform .6s;fill:#fff;filter:drop-shadow(0 0 6px #fff)}
+.hint{font-size:14px;color:var(--muted);min-height:1.5em}
+.pendant{width:200px;height:230px}
+.pendant .chain{fill:none;stroke:url(#chromeG);stroke-width:2;stroke-dasharray:3 3}
+.pendant .drop{animation:drop 1.1s cubic-bezier(.3,1.3,.5,1) both}
+@keyframes drop{from{transform:translateY(-120px);opacity:0}to{transform:none;opacity:1}}
+
+/* yellow */
+.stage{position:relative;width:100%;max-width:320px;height:300px;border-radius:24px;overflow:hidden;box-shadow:0 0 0 1px var(--line);touch-action:none}
+.stage .gray,.stage .sunny{position:absolute;inset:0}
+.stage .sunny{background:linear-gradient(#ffd34d,#ffeeb0 70%,#fff8dc)}
+.stage .gray{background:linear-gradient(#8e959c,#b7bcc1 70%,#cfd3d6)}
+.stage .cloud{position:absolute;height:34px;border-radius:999px;background:#e3e6e9}
+.stage .sun{position:absolute;left:50%;width:84px;height:84px;margin-left:-42px;border-radius:50%;background:radial-gradient(circle at 40% 40%,#fff3b0,#ffb800 70%);box-shadow:0 0 40px 10px rgba(255,190,0,.5);cursor:grab;border:0;touch-action:none}
+.stage .rays{position:absolute;left:50%;width:220px;height:220px;margin-left:-110px;opacity:0;transition:opacity .6s;pointer-events:none;animation:spin 18s linear infinite}
+.stage .rays.on{opacity:1}
+@keyframes spin{to{transform:rotate(360deg)}}
+.stage .ground{position:absolute;left:0;right:0;bottom:0;height:70px;background:#6b4300;opacity:.18}
+
+/* final */
+body[data-scene=final]{background:linear-gradient(180deg,#fbf8f4,#f5eee8)}
+.code{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;width:100%;max-width:360px}
+.cell{display:flex;flex-direction:column;align-items:center;gap:6px}
+.cell input{width:100%;box-sizing:border-box;aspect-ratio:3/4;max-width:100%;font:700 26px var(--f-display);text-align:center;border-radius:12px;border:3px solid var(--c);background:#fff;color:#1f1a1c;padding:0;caret-color:var(--c)}
+.cell label{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+.cell .seen{width:6px;height:6px;border-radius:50%;background:var(--c);opacity:0}
+.cell .seen.on{opacity:1}
+.err{color:#b8336a;min-height:1.5em;font-size:14px}
+.letter{width:100%;max-width:380px;box-sizing:border-box;background:#fff;border-radius:6px;padding:28px 24px 30px;text-align:left;box-shadow:0 10px 40px rgba(60,20,40,.12);display:flex;flex-direction:column;gap:14px;position:relative}
+.letter::before{content:"";position:absolute;left:0;right:0;top:0;height:6px;border-radius:6px 6px 0 0;background:linear-gradient(90deg,#141414 0 16.6%,#c21f3e 0 33.3%,#f49ac1 0 50%,#1c5a46 0 66.6%,#b8c0c8 0 83.3%,#f7c948 0)}
+.letter p{font-family:var(--f-hand);font-size:23px;line-height:1.3;color:#2b2226}
+.letter .sig{text-align:right;font-size:28px;color:#b8336a}
+.numline{font:700 22px var(--f-display);letter-spacing:.08em;text-align:center}
+.numline small{display:block;font:500 13px var(--f-body);letter-spacing:0;color:var(--muted);margin-top:6px}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:5}
+
+/* home */
+.dots{display:flex;gap:10px}
+.dots i{width:18px;height:18px;border-radius:50%;box-shadow:inset 0 0 0 2px var(--c);display:block}
+.dots i.on{background:var(--c)}
+
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+
+<main id="app"></main>
+<canvas id="confetti" hidden></canvas>
+
+<script>
+(function(){
+const C = {
+  black:{name:"Чёрный", acc:"чёрную", c:"#141414", d:1},
+  red:{name:"Красный", acc:"красную", c:"#c21f3e", d:0},
+  pink:{name:"Розовый", acc:"розовую", c:"#f49ac1", d:1},
+  green:{name:"Зелёный", acc:"зелёную", c:"#1c5a46", d:0},
+  silver:{name:"Серебристый", acc:"серебристую", c:"#b8c0c8", d:2},
+  yellow:{name:"Жёлтый", acc:"жёлтую", c:"#f7c948", d:6}
+};
+const ORDER=["black","red","pink","green","silver","yellow"];
+const KEY="colordate26";
+function seen(){try{return JSON.parse(localStorage.getItem(KEY)||"{}")||{}}catch(e){return {}}}
+function mark(k){try{const s=seen();s[k]=1;localStorage.setItem(KEY,JSON.stringify(s))}catch(e){}}
+const app=document.getElementById("app");
+const $=s=>app.querySelector(s);
+
+function digit(k){
+  mark(k);
+  return `<div class="digit"><span class="dlab">Цифра · ${C[k].name}</span><b>${C[k].d}</b><small>Запомни её. В финале она встанет в ${C[k].acc} клетку.</small></div>`;
+}
+function show(id){const el=$(id);el.hidden=false;return el}
+function hide(id){$(id).hidden=true}
+
+const ICON={
+ lock:`<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/><circle cx="12" cy="15" r="1.3" fill="currentColor"/><path d="M12 16.3v1.6"/></svg>`,
+ heart:`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7.5-4.6-9.6-9.2C.8 8.3 3 4.5 6.6 4.5c2.1 0 3.6 1.2 5.4 3.2 1.8-2 3.3-3.2 5.4-3.2 3.6 0 5.8 3.8 4.2 7.3C19.5 16.4 12 21 12 21z"/></svg>`,
+ palette:`<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3a9 9 0 1 0 0 18c1.4 0 2-1 1.6-2.1-.4-1.2.3-2.4 1.6-2.4H17a4 4 0 0 0 4-4C21 7 17 3 12 3z"/><circle cx="7.5" cy="11" r="1.3" fill="currentColor"/><circle cx="10" cy="7" r="1.3" fill="currentColor"/><circle cx="15" cy="7.5" r="1.3" fill="currentColor"/></svg>`,
+ shirt:`<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M8.5 3.5 4 6l1.8 4 2-.9V20.5h8.4V9.1l2 .9L20 6l-4.5-2.5c-.5 1.6-1.9 2.6-3.5 2.6S9 5.1 8.5 3.5z"/></svg>`,
+ spark:`<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M10 4c.6 4 2 5.4 6 6-4 .6-5.4 2-6 6-.6-4-2-5.4-6-6 4-.6 5.4-2 6-6z"/><circle cx="18" cy="5" r="1.8"/></svg>`,
+ sun:`<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8"/></svg>`
+};
+
+/* ---------- BLACK ---------- */
+function black(){
+  app.innerHTML=`<section class="scene"><div class="wrap">
+    ${ICON.lock}<h1>ACCESS 18+</h1>
+    <div class="step" id="s1">
+      <p class="lead">Дальше опасно красиво. Подтверди, что тебе уже есть 18.</p>
+      <button class="btn" id="b1">Мне есть 18</button>
+    </div>
+    <div class="step" id="s2" hidden>
+      <p class="lead">Доступ почти открыт. Сотри плёнку пальцем.</p>
+      <div class="scratch">
+        <div class="under">
+          <p class="msg">Подтверждено: опасно красива.<br>Тебе положено что-то чёрное и тонкое. И что-то чёрное и сладкое.</p>
+          <div id="dg"></div>
+        </div>
+        <canvas id="sc" aria-label="Защитная плёнка, сотри пальцем"></canvas>
+      </div>
+    </div>
+  </div></section>`;
+  $("#b1").onclick=()=>{hide("#s1");show("#s2");initScratch()};
+  function initScratch(){
+    $("#dg").outerHTML=digit("black");
+    const cv=$("#sc"),box=cv.parentElement,ctx=cv.getContext("2d"),dpr=Math.min(2,window.devicePixelRatio||1);
+    const r=box.getBoundingClientRect();cv.width=r.width*dpr;cv.height=r.height*dpr;
+    const g=ctx.createLinearGradient(0,0,cv.width,cv.height);g.addColorStop(0,"#3a3236");g.addColorStop(.5,"#5a4f54");g.addColorStop(1,"#2a2427");
+    ctx.fillStyle=g;ctx.fillRect(0,0,cv.width,cv.height);
+    ctx.fillStyle="rgba(255,255,255,.08)";for(let i=0;i<500;i++)ctx.fillRect(Math.random()*cv.width,Math.random()*cv.height,1.5*dpr,1.5*dpr);
+    ctx.fillStyle="#e0435f";ctx.font=`700 ${16*dpr}px Unbounded, sans-serif`;ctx.textAlign="center";ctx.fillText("СОТРИ ПАЛЬЦЕМ",cv.width/2,cv.height/2);
+    ctx.globalCompositeOperation="destination-out";
+    let down=false,n=0,done=false,last=null;
+    const pt=e=>{const b=cv.getBoundingClientRect();return[(e.clientX-b.left)*dpr,(e.clientY-b.top)*dpr]};
+    const draw=e=>{const[x,y]=pt(e);ctx.lineWidth=46*dpr;ctx.lineCap="round";ctx.beginPath();if(last){ctx.moveTo(last[0],last[1])}else{ctx.moveTo(x,y)}ctx.lineTo(x+.1,y);ctx.stroke();last=[x,y];if(++n%8===0)check()};
+    function check(){if(done)return;const d=ctx.getImageData(0,0,cv.width,cv.height).data;let c=0,t=0;for(let i=3;i<d.length;i+=64){t++;if(d[i]===0)c++}if(c/t>.5){done=true;cv.style.opacity=0;setTimeout(()=>cv.remove(),650)}}
+    cv.addEventListener("pointerdown",e=>{down=true;last=null;cv.setPointerCapture(e.pointerId);draw(e)});
+    cv.addEventListener("pointermove",e=>{if(down)draw(e)});
+    ["pointerup","pointercancel"].forEach(t=>cv.addEventListener(t,()=>{down=false;last=null;check()}));
+  }
+}
+
+/* ---------- RED ---------- */
+function red(){
+  app.innerHTML=`<section class="scene"><div class="wrap">
+    <h1>LOVE DETECTED</h1>
+    <svg class="ecg" viewBox="0 0 330 70" aria-hidden="true"><path id="ecg" d="M0 40 H60 L72 14 L86 62 L98 40 H170 L182 14 L196 62 L208 40 H330"/></svg>
+    <div class="step" id="s1">
+      <div class="bpm" id="bpm">72<span>BPM</span></div>
+      <button class="hold" id="hold" aria-label="Приложи палец и держи">
+        <svg viewBox="0 0 150 150"><circle class="ring" cx="75" cy="75" r="70"/><circle class="prog" id="prog" cx="75" cy="75" r="70"/></svg>
+        <span class="heart">${ICON.heart}</span>
+      </button>
+      <p class="lead">Приложи палец к сердцу и держи, пока сканер не дойдёт до конца.</p>
+    </div>
+    <div class="step" id="s2" hidden>
+      <div class="bpm">∞<span>BPM</span></div>
+      <p class="msg">Пульс: бесконечность.<br>Диагноз: влюблённость. Инкубационный период — 10 лет.</p>
+      <div class="candle" id="candle"><div class="wax"></div><div class="wick"></div><div class="flame"></div></div>
+      <button class="btn" id="light">Зажечь свечу</button>
+      <div id="dg"></div>
+    </div>
+  </div></section>`;
+  const hold=$("#hold"),prog=$("#prog"),bpm=$("#bpm"),ecg=$("#ecg"),heart=hold.querySelector(".heart");
+  let t0=0,raf=0,done=false;const DUR=2600;
+  const tick=now=>{const p=Math.min(1,(now-t0)/DUR);prog.style.strokeDashoffset=440*(1-p);bpm.firstChild.nodeValue=Math.round(72+p*128);ecg.style.animationDuration=(2.2-p*1.8)+"s";heart.style.transform=`scale(${1+.08*Math.sin(now/(120-p*70))})`;if(p<1){raf=requestAnimationFrame(tick)}else{done=true;try{navigator.vibrate&&navigator.vibrate([60,40,60])}catch(e){}hide("#s1");show("#s2")}};
+  const start=e=>{if(done)return;e.preventDefault();try{hold.setPointerCapture(e.pointerId)}catch(_){}t0=performance.now();raf=requestAnimationFrame(tick)};
+  const stop=()=>{if(done)return;cancelAnimationFrame(raf);prog.style.strokeDashoffset=440;bpm.firstChild.nodeValue=72;ecg.style.animationDuration="2.2s";heart.style.transform=""};
+  hold.addEventListener("pointerdown",start);["pointerup","pointercancel","pointerleave"].forEach(t=>hold.addEventListener(t,stop));
+  hold.addEventListener("contextmenu",e=>e.preventDefault());
+  hold.addEventListener("keydown",e=>{if((e.key===" "||e.key==="Enter")&&!e.repeat){t0=performance.now();raf=requestAnimationFrame(tick)}});
+  hold.addEventListener("keyup",stop);
+  $("#light").onclick=function(){$("#candle").classList.add("lit");this.remove();$("#dg").outerHTML=`<p class="lead">Эта свеча — чтобы дома пахло так же тепло, как рядом с тобой. А красный бархат — просто потому что ты сладкая.</p>`+digit("red")};
+}
+
+/* ---------- PINK ---------- */
+function pink(){
+  const P=[["#ff6fa3","малиновый"],["#c77dff","лиловый"],["#ff9f6e","персиковый"],["#6cc4ff","голубой"],["#ffd166","медовый"],["#7fdcb0","мятный"]];
+  app.innerHTML=`<section class="scene"><div class="wrap">
+    ${ICON.palette}<h1>CREATE US</h1>
+    <p class="lead" id="ask">Выбери свой цвет</p>
+    <div class="names"><span>Ты</span><span>Питерский</span></div>
+    <div class="mix" id="mix">
+      <div class="blob a" id="ba"></div><div class="blob b" id="bb"></div>
+      <svg class="us" viewBox="0 0 24 24"><defs><linearGradient id="ug" x1="0" x2="1"><stop id="u1" offset="0"/><stop id="u2" offset="1"/></linearGradient></defs><path fill="url(#ug)" d="M12 21s-7.5-4.6-9.6-9.2C.8 8.3 3 4.5 6.6 4.5c2.1 0 3.6 1.2 5.4 3.2 1.8-2 3.3-3.2 5.4-3.2 3.6 0 5.8 3.8 4.2 7.3C19.5 16.4 12 21 12 21z"/></svg>
+    </div>
+    <div class="swatches" id="sws">${P.map(([c,n],i)=>`<button class="sw" style="background:${c}" data-c="${c}" aria-label="${n}"></button>`).join("")}</div>
+    <div class="step" id="s3" hidden>
+      <p class="msg">Вот так выглядим мы.<br>Мягко, ярко и немного липко, как моти. А тапочки — чтобы ходить по дому так же мягко, как ты ходишь по моему сердцу.</p>
+      <div id="dg"></div>
+    </div>
+  </div></section>`;
+  let pick=0;
+  $("#sws").addEventListener("click",e=>{const b=e.target.closest(".sw");if(!b||b.disabled)return;const c=b.dataset.c;b.disabled=true;
+    if(pick===0){const a=$("#ba");a.style.background=c;a.classList.add("on");$("#u1").setAttribute("stop-color",c);$("#ask").textContent="А теперь выбери цвет для меня";pick=1}
+    else{const bb=$("#bb");bb.style.background=c;bb.classList.add("on");$("#u2").setAttribute("stop-color",c);$("#sws").hidden=true;$("#ask").textContent="Смешиваем…";
+      setTimeout(()=>{$("#mix").classList.add("merged");setTimeout(()=>{$("#ask").textContent="Готово";show("#s3");$("#dg").outerHTML=digit("pink")},1500)},700)}
+  });
+}
+
+/* ---------- GREEN ---------- */
+function green(){
+  app.innerHTML=`<section class="scene"><div class="wrap">
+    ${ICON.shirt}<h1>FASHION COURT</h1>
+    <div class="case" id="case">
+      <span class="no">Дело № 10/10</span>
+      <p>Подсудимая обвиняется в том, что выглядит слишком хорошо в любом образе. Систематически, на протяжении десяти лет.</p>
+      <p style="color:var(--muted)">Признаёте ли вы вину?</p>
+    </div>
+    <div class="step" id="s1">
+      <div class="choices" id="ch"><button class="btn" id="guilty">Виновна</button><button class="btn ghost" id="notGuilty">Невиновна</button></div>
+    </div>
+    <div class="step" id="s2" hidden>
+      <p class="lead">Суд принял признание. Осталось огласить приговор.</p>
+      <button class="btn" id="gavel">Стукнуть молотком</button>
+    </div>
+    <div class="step" id="s3" hidden>
+      <div class="stamp">ВИНОВНА</div>
+      <p class="msg">Приговор: пожизненно нежные руки.<br>И половинка авокадо. Вторая половинка — я.</p>
+      <div id="dg"></div>
+    </div>
+  </div></section>`;
+  let runs=0;const ng=$("#notGuilty");
+  const run=e=>{e.preventDefault();runs++;if(runs>=4){ng.textContent="Ладно, виновна";ng.classList.remove("ghost");ng.style.transform="";ng.onclick=guilty;return}
+    const x=(Math.random()*2-1)*90,y=(Math.random()*2-1)*50+ (runs%2?-30:30);ng.style.transform=`translate(${x}px,${y}px) rotate(${(Math.random()*2-1)*12}deg)`};
+  ng.addEventListener("pointerdown",e=>{if(runs<4)run(e)});
+  ng.addEventListener("click",e=>{if(runs<4)run(e)});
+  function guilty(){hide("#s1");show("#s2")}
+  $("#guilty").onclick=guilty;
+  $("#gavel").onclick=()=>{const c=$("#case");c.classList.add("shake");try{navigator.vibrate&&navigator.vibrate(80)}catch(e){}setTimeout(()=>{hide("#s2");show("#s3");$("#dg").outerHTML=digit("green")},350)};
+}
+
+/* ---------- SILVER ---------- */
+function silver(){
+  let seed=10;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;
+  let stars="";for(let i=0;i<70;i++){const x=(rnd()*290+5).toFixed(1),y=(rnd()*330+5).toFixed(1),r=(rnd()*1.3+.4).toFixed(2),tw=rnd()>.55?` class="st tw" style="animation-delay:${(rnd()*3).toFixed(2)}s"`:` class="st"`;stars+=`<circle cx="${x}" cy="${y}" r="${r}"${tw}/>`}
+  app.innerHTML=`<section class="scene"><div class="wrap">
+    <span style="color:#dfe3e8">${ICON.spark}</span><h1 class="chrome">OUR UNIVERSE</h1>
+    <div class="step" id="s1">
+      <p class="lead">Звёзд тут много. Найди нашу: она чуть ярче остальных и дышит.</p>
+      <div class="sky"><svg viewBox="0 0 300 340" id="skysvg">${stars}
+        <path class="st ours" id="ours" d="M206 112 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3z"/>
+        <circle id="hit" cx="206" cy="122" r="24" fill="transparent" style="cursor:pointer"/>
+      </svg></div>
+      <p class="hint" id="hint"></p>
+    </div>
+    <div class="step" id="s2" hidden>
+      <p class="msg">Нашлась. Из миллиардов — одна.</p>
+      <button class="btn" id="take" style="background:linear-gradient(100deg,#9aa3ad,#f6f8fb 45%,#b9c1ca);color:#151820">Забрать её с собой</button>
+    </div>
+    <div class="step" id="s3" hidden>
+      <svg class="pendant" viewBox="0 0 200 230" aria-hidden="true">
+        <defs><linearGradient id="chromeG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8d96a1"/><stop offset=".4" stop-color="#ffffff"/><stop offset=".7" stop-color="#a8b0ba"/><stop offset="1" stop-color="#e9edf1"/></linearGradient></defs>
+        <path class="chain" d="M10 10 C 40 150, 160 150, 190 10"/>
+        <g class="drop"><circle cx="100" cy="128" r="4" fill="none" stroke="url(#chromeG)" stroke-width="2"/><path d="M100 140 l9 21 21 9 -21 9 -9 21 -9 -21 -21 -9 21 -9z" fill="url(#chromeG)"/></g>
+      </svg>
+      <p class="msg">Теперь наша звезда будет висеть у тебя на шее. Пусть всегда будет рядом с сердцем.</p>
+      <div id="dg"></div>
+    </div>
+  </div></section>`;
+  const misses=["Не эта. Наша мерцает сильнее.","Холодно. Посмотри правее и выше.","Почти. Она справа, вверху."];let m=0;
+  $("#skysvg").addEventListener("click",e=>{if(e.target.id==="hit"){$("#ours").classList.add("found");$("#hint").textContent="";setTimeout(()=>{hide("#s1");show("#s2")},900)}else{$("#hint").textContent=misses[Math.min(m++,2)]}});
+  $("#take").onclick=()=>{hide("#s2");show("#s3");$("#dg").outerHTML=digit("silver")};
+}
+
+/* ---------- YELLOW ---------- */
+function yellow(){
+  app.innerHTML=`<section class="scene"><div class="wrap">
+    ${ICON.sun}<h1>SUNNY LEVEL</h1>
+    <div class="step" id="s1">
+      <p class="lead" id="ylead">Тут пасмурно, как в Питере. Потяни солнце вверх.</p>
+    </div>
+    <div class="stage" id="stage">
+      <div class="sunny"></div><div class="gray" id="gray"></div>
+      <div class="cloud" id="c1" style="width:120px;top:40px;left:20px"></div>
+      <div class="cloud" id="c2" style="width:90px;top:90px;right:24px"></div>
+      <svg class="rays" id="rays" viewBox="0 0 220 220" aria-hidden="true">${Array.from({length:12},(_,i)=>`<rect x="106" y="0" width="8" height="40" rx="4" fill="#ffb800" opacity=".55" transform="rotate(${i*30} 110 110)"/>`).join("")}</svg>
+      <div class="ground"></div>
+      <button class="sun" id="sun" aria-label="Солнце, потяни вверх или нажми"></button>
+    </div>
+    <div class="step" id="s2" hidden>
+      <p class="msg">С тобой даже в Питере солнечно.</p>
+      <button class="btn" id="catch">Поймать лучик</button>
+    </div>
+    <div class="step" id="s3" hidden>
+      <p class="msg">Лучик пойман. Это самое тёплое, что у меня есть, и оно твоё.</p>
+      <div id="dg"></div>
+    </div>
+  </div></section>`;
+  const stage=$("#stage"),sun=$("#sun"),gray=$("#gray"),rays=$("#rays");let t=0,drag=false,done=false;
+  const H=()=>stage.clientHeight;
+  function set(v){t=Math.max(0,Math.min(1,v));const bottom=H()-84-20, top=40;const y=bottom-(bottom-top)*t;sun.style.top=y+"px";rays.style.top=(y+42-110)+"px";gray.style.opacity=1-t;$("#c1").style.transform=`translateX(${-160*t}px)`;$("#c2").style.transform=`translateX(${150*t}px)`;if(t>.92&&!done){done=true;rays.classList.add("on");hide("#s1");show("#s2")}}
+  set(0);
+  sun.addEventListener("pointerdown",e=>{drag=true;sun.setPointerCapture(e.pointerId);sun.style.cursor="grabbing"});
+  sun.addEventListener("pointermove",e=>{if(!drag||done)return;const b=stage.getBoundingClientRect();const bottom=H()-84-20,top=40;const y=e.clientY-b.top-42;set((bottom-y)/(bottom-top))});
+  sun.addEventListener("pointerup",()=>{drag=false;sun.style.cursor="grab"});
+  sun.addEventListener("keydown",e=>{if(e.key==="ArrowUp"||e.key==="Enter"||e.key===" "){e.preventDefault();set(t+.25)}});
+  sun.addEventListener("click",()=>{if(!done&&t<.05){let v=0;const a=()=>{v+=.03;set(v);if(v<1&&!done)requestAnimationFrame(a)};a()}});
+  $("#catch").onclick=()=>{hide("#s2");show("#s3");$("#dg").outerHTML=digit("yellow")};
+}
+
+/* ---------- FINAL ---------- */
+function final(){
+  document.body.dataset.scene="final";
+  const s=seen();
+  app.innerHTML=`<section class="scene"><div class="wrap">
+    <h1>10 ЛЕТ</h1>
+    <div class="step" id="s1">
+      <p class="lead">Шесть цветов, шесть цифр. Впиши каждую в клетку своего цвета.</p>
+      <div class="code" id="code">${ORDER.map((k,i)=>`<div class="cell" style="--c:${C[k].c}"><input id="d${i}" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="off" aria-label="${C[k].name}"><label for="d${i}">${C[k].name.slice(0,4)}</label><span class="seen ${s[k]?"on":""}"></span></div>`).join("")}</div>
+      <p class="err" id="err"></p>
+      <button class="btn" id="open" style="background:#1f1a1c;color:#fbf8f4">Открыть</button>
+    </div>
+    <div class="step" id="s2" hidden>
+      <div class="numline">10 · 10 · 26<small>10 лет дружбы · 10 из 10 · 2026, наш год</small></div>
+      <div class="letter">
+        <p>Мы знакомы больше десяти лет. Все шутят, что надо было столько дружить, чтобы дойти до этого. А я думаю, что просто ждал, пока стану уверен. Теперь уверен.</p>
+        <p>Сегодня шесть цветов — и все они про тебя: опасно красивая, моё бесконечное сердцебиение, самая мягкая, самая стильная, моя звезда и моё солнце.</p>
+        <p>Спасибо, что ты есть. Спасибо за эти десять лет и за всё, что будет дальше.</p>
+        <p class="sig">Твой Питерский</p>
+      </div>
+    </div>
+  </div></section>`;
+  const ins=[...app.querySelectorAll(".code input")];
+  ins.forEach((el,i)=>{
+    el.addEventListener("input",()=>{el.value=el.value.replace(/\D/g,"").slice(-1);$("#err").textContent="";if(el.value&&i<5)ins[i+1].focus();if(ins.every(x=>x.value))check()});
+    el.addEventListener("keydown",e=>{if(e.key==="Backspace"&&!el.value&&i>0){ins[i-1].focus()}});
+  });
+  $("#open").onclick=check;
+  function check(){const v=ins.map(x=>x.value).join("");if(v.length<6){$("#err").textContent="Заполни все шесть клеток.";return}
+    if(v===ORDER.map(k=>C[k].d).join("")){hide("#s1");show("#s2");confetti()}
+    else{$("#err").textContent="Не тот код. Проверь, что каждая цифра стоит в клетке своего цвета.";const c=$("#code");c.classList.remove("shake");void c.offsetWidth;c.classList.add("shake")}}
+}
+function confetti(){
+  if(matchMedia("(prefers-reduced-motion: reduce)").matches)return;
+  const cv=document.getElementById("confetti");cv.hidden=false;const ctx=cv.getContext("2d");cv.width=innerWidth;cv.height=innerHeight;
+  const cols=ORDER.map(k=>C[k].c);const ps=Array.from({length:150},()=>({x:innerWidth/2,y:innerHeight*.35,vx:(Math.random()*2-1)*7,vy:Math.random()*-9-3,s:Math.random()*6+4,c:cols[Math.floor(Math.random()*6)],r:Math.random()*6,vr:(Math.random()-.5)*.3}));
+  let f=0;(function loop(){ctx.clearRect(0,0,cv.width,cv.height);ps.forEach(p=>{p.vy+=.22;p.vx*=.99;p.x+=p.vx;p.y+=p.vy;p.r+=p.vr;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.r);ctx.fillStyle=p.c;ctx.fillRect(-p.s/2,-p.s/4,p.s,p.s/2);ctx.restore()});if(++f<220)requestAnimationFrame(loop);else cv.hidden=true})();
+}
+
+/* ---------- HOME ---------- */
+function home(){
+  const s=seen();
+  app.innerHTML=`<section class="scene"><div class="wrap">
+    <h1>Цветное свидание</h1>
+    <p class="lead">Найди QR-коды у цветов. За каждым — маленькая игра и одна цифра. Седьмой код откроет финал.</p>
+    <div class="dots">${ORDER.map(k=>`<i style="--c:${C[k].c}" class="${s[k]?"on":""}" title="${C[k].name}"></i>`).join("")}</div>
+  </div></section>`;
+}
+
+const SCENES={black,red,pink,green,silver,yellow,final};
+function route(){const k=location.hash.slice(1);document.body.dataset.scene=SCENES[k]?k:"home";(SCENES[k]||home)();window.scrollTo(0,0)}
+window.addEventListener("hashchange",route);route();
+})();
+</script>
+</body>
+</html>
