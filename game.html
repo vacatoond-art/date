@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="robots" content="noindex">
+<title>Поймай мои сердечки</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;800;900&family=Caveat:wght@600;700&display=swap">
+<style>
+/* Layout: full-screen candy sky, canvas game, two overlay cards (start and finale). Single light look by design. */
+:root{
+  --sky-top:#ffd9e8;
+  --sky-bottom:#fff1e4;
+  --ink:#5a2a3c;
+  --ink-soft:#9a6177;
+  --pink:#ff5c8a;
+  --pink-deep:#e23e6f;
+  --card:#fffaf6;
+  --f-ui:"Nunito",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-hand:"Caveat","Segoe Print","Comic Sans MS",cursive;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;height:100%;overflow:hidden;overscroll-behavior:none}
+body{background:linear-gradient(180deg,var(--sky-top),var(--sky-bottom));color:var(--ink);font-family:var(--f-ui);
+  -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;touch-action:none}
+#game{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
+.hud{position:fixed;left:0;right:0;top:0;z-index:2;display:flex;justify-content:center;pointer-events:none;
+  padding-top:max(14px,env(safe-area-inset-top,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.score{display:flex;align-items:center;gap:10px;background:rgba(255,250,246,.85);border-radius:999px;padding:8px 16px 8px 10px;
+  box-shadow:0 6px 18px rgba(226,62,111,.15);font-weight:900;font-size:18px;font-variant-numeric:tabular-nums}
+.bar{width:120px;height:10px;border-radius:99px;background:#ffe0ea;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#ff8fb0,var(--pink-deep));border-radius:99px;transition:width .25s}
+.overlay{position:fixed;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;
+  padding-top:max(20px,env(safe-area-inset-top,0px));padding-bottom:max(20px,env(safe-area-inset-bottom,0px));
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  background:rgba(255,225,236,.45);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);transition:opacity .4s}
+.overlay.hide{opacity:0;pointer-events:none}
+.card{width:100%;max-width:360px;background:var(--card);border-radius:28px;padding:28px 24px 26px;text-align:center;
+  box-shadow:0 20px 50px rgba(226,62,111,.22);display:flex;flex-direction:column;align-items:center;gap:14px;animation:pop .5s cubic-bezier(.2,1.4,.4,1) both}
+@keyframes pop{from{transform:scale(.85);opacity:0}to{transform:none;opacity:1}}
+h1{margin:0;font-size:28px;line-height:1.1;font-weight:900;color:var(--pink-deep);text-wrap:balance}
+.lead{margin:0;font-size:16px;line-height:1.45;color:var(--ink-soft);font-weight:600;max-width:30ch}
+.legend{display:flex;gap:18px;justify-content:center;font-size:14px;font-weight:800;color:var(--ink-soft)}
+.legend span{display:flex;align-items:center;gap:6px}
+.legend svg{width:26px;height:26px}
+.btn{font:900 17px/1 var(--f-ui);border:0;border-radius:999px;padding:16px 34px;background:var(--pink);color:#fff;cursor:pointer;
+  box-shadow:0 6px 0 var(--pink-deep);transition:transform .1s,box-shadow .1s;touch-action:manipulation}
+.btn:active{transform:translateY(4px);box-shadow:0 2px 0 var(--pink-deep)}
+.btn:focus-visible{outline:3px solid var(--ink);outline-offset:4px}
+.btn.ghost{background:transparent;color:var(--ink-soft);box-shadow:none;padding:8px 14px;font-size:14px}
+.msg{font-family:var(--f-hand);font-size:27px;line-height:1.22;color:var(--ink);margin:0;text-wrap:pretty}
+.msg + .msg{margin-top:-4px}
+.sig{font-family:var(--f-hand);font-size:30px;color:var(--pink-deep);align-self:flex-end;margin:0}
+.big-heart{width:84px;height:78px;animation:beat 1.1s ease-in-out infinite}
+@keyframes beat{0%,100%{transform:scale(1)}15%{transform:scale(1.12)}30%{transform:scale(1)}45%{transform:scale(1.08)}}
+@media (prefers-reduced-motion:reduce){.card,.big-heart{animation:none}}
+</style>
+</head>
+<body>
+<canvas id="game" aria-label="Игра: лови сердечки корзинкой"></canvas>
+
+<div class="hud" id="hud" hidden>
+  <div class="score"><svg width="22" height="20" viewBox="0 0 24 22" aria-hidden="true"><path fill="#ff5c8a" d="M12 21C5 16 1 12 1 7a5.5 5.5 0 0 1 11-1.5A5.5 5.5 0 0 1 23 7c0 5-4 9-11 14z"/></svg><span id="count">0 / 15</span><div class="bar"><i id="fill"></i></div></div>
+</div>
+
+<div class="overlay" id="start">
+  <div class="card">
+    <svg class="big-heart" viewBox="0 0 24 22" aria-hidden="true"><path fill="#ff5c8a" d="M12 21C5 16 1 12 1 7a5.5 5.5 0 0 1 11-1.5A5.5 5.5 0 0 1 23 7c0 5-4 9-11 14z"/></svg>
+    <h1>Поймай мои сердечки</h1>
+    <p class="lead">Води пальцем по экрану, чтобы двигать корзинку. Собери 15 сердечек, и узнаешь кое-что.</p>
+    <div class="legend">
+      <span><svg viewBox="0 0 24 22" aria-hidden="true"><path fill="#ff5c8a" d="M12 21C5 16 1 12 1 7a5.5 5.5 0 0 1 11-1.5A5.5 5.5 0 0 1 23 7c0 5-4 9-11 14z"/></svg>лови</span>
+      <span><svg viewBox="0 0 30 22" aria-hidden="true"><g fill="#a9b4c9"><circle cx="9" cy="13" r="7"/><circle cx="17" cy="9" r="8"/><circle cx="23" cy="14" r="6"/><rect x="8" y="12" width="16" height="8" rx="4"/></g></svg>не лови</span>
+    </div>
+    <button class="btn" id="play">Играть</button>
+  </div>
+</div>
+
+<div class="overlay hide" id="end">
+  <div class="card">
+    <svg class="big-heart" viewBox="0 0 24 22" aria-hidden="true"><path fill="#ff5c8a" d="M12 21C5 16 1 12 1 7a5.5 5.5 0 0 1 11-1.5A5.5 5.5 0 0 1 23 7c0 5-4 9-11 14z"/></svg>
+    <h1>Все сердечки твои!</h1>
+    <p class="msg">Хотя, если честно, ловить их было необязательно: они и так все твои.</p>
+    <p class="msg">Каждое из них — это момент, когда я думал о тебе. А думаю я о тебе почти всегда.</p>
+    <p class="msg">Спасибо, что ты у меня есть. 💗</p>
+    <p class="sig">Твой Питерский</p>
+    <button class="btn ghost" id="again">Сыграть ещё раз</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  var TARGET=15;
+  var cv=document.getElementById("game"), ctx=cv.getContext("2d");
+  var hud=document.getElementById("hud"), countEl=document.getElementById("count"), fill=document.getElementById("fill");
+  var startEl=document.getElementById("start"), endEl=document.getElementById("end");
+  var W=0,H=0,DPR=1, state="intro", items=[], pops=[], sparkles=[], confetti=[];
+  var score=0, spawnT=0, last=0, sadT=0, happyT=0, wobble=0;
+  var basket={x:0,w:96,h:58,y:0,tx:0};
+  var PINKS=["#ff5c8a","#ff7aa2","#ff9cbc","#f2457a","#ffb3c9"];
+
+  function resize(){
+    DPR=Math.min(2,window.devicePixelRatio||1); W=window.innerWidth; H=window.innerHeight;
+    cv.width=W*DPR; cv.height=H*DPR; ctx.setTransform(DPR,0,0,DPR,0,0);
+    basket.w=Math.max(84,Math.min(120,W*0.24)); basket.h=basket.w*0.6;
+    basket.y=H-basket.h-Math.max(28,H*0.06);
+    if(!basket.x){basket.x=basket.tx=W/2}
+    if(!sparkles.length){for(var i=0;i<26;i++)sparkles.push({x:Math.random(),y:Math.random(),r:Math.random()*1.8+0.6,p:Math.random()*6})}
+  }
+  window.addEventListener("resize",resize); resize();
+
+  function heartPath(x,y,s){
+    ctx.beginPath();
+    ctx.moveTo(x,y+s*0.35);
+    ctx.bezierCurveTo(x,y,x-s*0.5,y-s*0.15,x-s*0.5,y+s*0.12);
+    ctx.bezierCurveTo(x-s*0.5,y+s*0.45,x-s*0.1,y+s*0.6,x,y+s*0.8);
+    ctx.bezierCurveTo(x+s*0.1,y+s*0.6,x+s*0.5,y+s*0.45,x+s*0.5,y+s*0.12);
+    ctx.bezierCurveTo(x+s*0.5,y-s*0.15,x,y,x,y+s*0.35);
+    ctx.closePath();
+  }
+  function drawHeart(x,y,s,c,rot){
+    ctx.save(); ctx.translate(x,y); ctx.rotate(rot||0);
+    heartPath(0,-s*0.4,s); ctx.fillStyle=c; ctx.fill();
+    ctx.beginPath(); ctx.ellipse(-s*0.22,-s*0.18,s*0.09,s*0.13,-0.6,0,Math.PI*2); ctx.fillStyle="rgba(255,255,255,.55)"; ctx.fill();
+    ctx.restore();
+  }
+  function drawCloud(x,y,s,t){
+    ctx.save(); ctx.translate(x,y);
+    ctx.fillStyle="#a9b4c9";
+    [[-0.32,0.05,0.3],[0,-0.12,0.36],[0.32,0.06,0.27]].forEach(function(c){ctx.beginPath();ctx.arc(c[0]*s,c[1]*s,c[2]*s,0,Math.PI*2);ctx.fill()});
+    ctx.beginPath(); ctx.roundRect(-0.52*s,0,1.04*s,0.3*s,0.15*s); ctx.fill();
+    ctx.fillStyle="#5d6780";
+    ctx.beginPath(); ctx.arc(-0.14*s,0.05*s,0.04*s,0,Math.PI*2); ctx.arc(0.14*s,0.05*s,0.04*s,0,Math.PI*2); ctx.fill();
+    ctx.strokeStyle="#5d6780"; ctx.lineWidth=Math.max(1.5,s*0.035); ctx.lineCap="round";
+    ctx.beginPath(); ctx.arc(0,0.22*s,0.08*s,Math.PI*1.15,Math.PI*1.85); ctx.stroke();
+    ctx.fillStyle="#7fb2ff";
+    for(var i=0;i<2;i++){var dy=((t*90+i*40)%50); ctx.globalAlpha=1-dy/50; ctx.beginPath(); ctx.ellipse((i?0.2:-0.2)*s,0.38*s+dy,0.035*s,0.06*s,0,0,Math.PI*2); ctx.fill()}
+    ctx.restore();
+  }
+  function drawBasket(){
+    var b=basket, x=b.x, y=b.y, w=b.w, h=b.h, sq=Math.sin(wobble*20)*Math.min(1,wobble*4)*4;
+    ctx.save(); ctx.translate(x,y);
+    var shown=Math.min(score,12);
+    for(var i=0;i<shown;i++){var col=i%4, row=Math.floor(i/4); drawHeart((col-1.5)*w*0.2+(row%2)*6,-row*9+4,w*0.2,PINKS[i%PINKS.length],(i%3-1)*0.25)}
+    ctx.beginPath(); ctx.moveTo(-w/2-sq,0); ctx.lineTo(w/2+sq,0); ctx.lineTo(w/2-w*0.1,h); ctx.quadraticCurveTo(0,h+6,-w/2+w*0.1,h); ctx.closePath();
+    ctx.fillStyle="#f6c48f"; ctx.fill();
+    ctx.save(); ctx.clip(); ctx.strokeStyle="rgba(176,112,58,.35)"; ctx.lineWidth=3;
+    for(var k=1;k<4;k++){ctx.beginPath();ctx.moveTo(-w,h*k/4);ctx.lineTo(w,h*k/4);ctx.stroke()}
+    ctx.restore();
+    ctx.fillStyle="#e9a96b"; ctx.beginPath(); ctx.roundRect(-w/2-6-sq,-6,w+12+sq*2,12,6); ctx.fill();
+    var sad=sadT>0, happy=happyT>0;
+    ctx.fillStyle="#5a2a3c";
+    if(happy){ctx.lineWidth=3;ctx.strokeStyle="#5a2a3c";ctx.lineCap="round";ctx.beginPath();ctx.arc(-w*0.15,h*0.42,4,Math.PI*1.1,Math.PI*1.9);ctx.stroke();ctx.beginPath();ctx.arc(w*0.15,h*0.42,4,Math.PI*1.1,Math.PI*1.9);ctx.stroke()}
+    else{ctx.beginPath();ctx.arc(-w*0.15,h*0.4,3.6,0,Math.PI*2);ctx.arc(w*0.15,h*0.4,3.6,0,Math.PI*2);ctx.fill()}
+    ctx.strokeStyle="#5a2a3c"; ctx.lineWidth=2.6; ctx.lineCap="round"; ctx.beginPath();
+    if(sad){ctx.arc(0,h*0.68,6,Math.PI*1.15,Math.PI*1.85)}else{ctx.arc(0,h*0.52,6,Math.PI*0.15,Math.PI*0.85)}
+    ctx.stroke();
+    ctx.fillStyle="rgba(255,120,150,.45)"; ctx.beginPath(); ctx.ellipse(-w*0.27,h*0.55,7,4.5,0,0,Math.PI*2); ctx.ellipse(w*0.27,h*0.55,7,4.5,0,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+
+  function spawn(){
+    var prog=score/TARGET, cloud=score>=2 && Math.random()<0.24+prog*0.08;
+    var s=cloud?Math.max(46,W*0.12):Math.max(30,Math.min(44,W*0.09));
+    items.push({x:s/2+Math.random()*(W-s),y:-s,s:s,cloud:cloud,v:(150+Math.random()*70)*(1+prog*0.55)*(H/800+0.25),
+      ph:Math.random()*6,c:PINKS[Math.floor(Math.random()*PINKS.length)],rot:(Math.random()-0.5)*0.5});
+  }
+  function pop(x,y,t,c){pops.push({x:x,y:y,t:t,c:c,life:1})}
+  function setScore(n){score=Math.max(0,n); countEl.textContent=score+" / "+TARGET; fill.style.width=(100*score/TARGET)+"%"}
+  function buzz(ms){try{navigator.vibrate&&navigator.vibrate(ms)}catch(e){}}
+
+  function win(){
+    state="won"; buzz([40,60,40]);
+    for(var i=0;i<70;i++)confetti.push({x:W/2,y:H*0.55,vx:(Math.random()*2-1)*320,vy:-Math.random()*520-160,s:12+Math.random()*14,c:PINKS[i%5],r:Math.random()*6,vr:(Math.random()-0.5)*6});
+    setTimeout(function(){hud.hidden=true; endEl.classList.remove("hide")},900);
+  }
+
+  function update(dt,t){
+    if(state==="play"){
+      spawnT-=dt; if(spawnT<=0){spawn(); spawnT=Math.max(0.42,0.78-score*0.022)*(0.75+Math.random()*0.5)}
+    }
+    basket.x+=(basket.tx-basket.x)*Math.min(1,dt*18);
+    basket.x=Math.max(basket.w/2,Math.min(W-basket.w/2,basket.x));
+    if(sadT>0)sadT-=dt; if(happyT>0)happyT-=dt; if(wobble>0)wobble-=dt;
+    for(var i=items.length-1;i>=0;i--){
+      var it=items[i]; it.y+=it.v*dt; it.x+=Math.sin(t*2+it.ph)*20*dt;
+      var top=basket.y-4, half=basket.w/2;
+      if(state==="play" && it.y+it.s*0.35>top && it.y<top+basket.h*0.5 && Math.abs(it.x-basket.x)<half+it.s*0.15){
+        items.splice(i,1);
+        if(it.cloud){setScore(score-1); sadT=0.9; happyT=0; wobble=0.3; pop(it.x,top-20,"ой, тучка","#6b7891"); buzz(90)}
+        else{setScore(score+1); happyT=0.5; wobble=0.25; pop(it.x,top-20,"+1",it.c); buzz(15); if(score>=TARGET)win()}
+        continue;
+      }
+      if(it.y-it.s>H)items.splice(i,1);
+    }
+    for(var j=pops.length-1;j>=0;j--){pops[j].life-=dt*1.2; pops[j].y-=40*dt; if(pops[j].life<=0)pops.splice(j,1)}
+    for(var k=confetti.length-1;k>=0;k--){var c=confetti[k]; c.vy+=700*dt; c.x+=c.vx*dt; c.y+=c.vy*dt; c.r+=c.vr*dt; if(c.y>H+40)confetti.splice(k,1)}
+  }
+
+  function draw(t){
+    ctx.clearRect(0,0,W,H);
+    sparkles.forEach(function(s){ctx.globalAlpha=0.35+0.35*Math.sin(t*1.5+s.p); ctx.fillStyle="#fff"; ctx.beginPath(); ctx.arc(s.x*W,s.y*H,s.r,0,Math.PI*2); ctx.fill()});
+    ctx.globalAlpha=1;
+    ctx.fillStyle="rgba(255,190,210,.35)"; ctx.beginPath(); ctx.ellipse(W/2,H+H*0.12,W*0.9,H*0.2,0,0,Math.PI*2); ctx.fill();
+    items.forEach(function(it){ if(it.cloud)drawCloud(it.x,it.y,it.s,t); else drawHeart(it.x,it.y,it.s,it.c,it.rot+Math.sin(t*3+it.ph)*0.15) });
+    drawBasket();
+    pops.forEach(function(p){ctx.globalAlpha=Math.max(0,p.life); ctx.fillStyle=p.c; ctx.font="900 20px Nunito, system-ui, sans-serif"; ctx.textAlign="center"; ctx.fillText(p.t,p.x,p.y)});
+    ctx.globalAlpha=1;
+    confetti.forEach(function(c){drawHeart(c.x,c.y,c.s,c.c,c.r)});
+  }
+
+  function loop(now){
+    var t=now/1000, dt=Math.min(0.05,t-(last||t)); last=t;
+    update(dt,t); draw(t); requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+
+  function moveTo(e){ if(state!=="play")return; basket.tx=e.clientX }
+  cv.addEventListener("pointerdown",function(e){moveTo(e)});
+  cv.addEventListener("pointermove",function(e){ if(e.pointerType==="mouse"||e.buttons||e.pressure>0) moveTo(e) });
+  window.addEventListener("keydown",function(e){
+    if(state!=="play")return;
+    if(e.key==="ArrowLeft"){basket.tx=basket.x-70;e.preventDefault()}
+    if(e.key==="ArrowRight"){basket.tx=basket.x+70;e.preventDefault()}
+  });
+
+  function start(){
+    items=[]; pops=[]; confetti=[]; setScore(0); spawnT=0.4; sadT=0; happyT=0; basket.x=basket.tx=W/2;
+    startEl.classList.add("hide"); endEl.classList.add("hide"); hud.hidden=false; state="play";
+  }
+  document.getElementById("play").addEventListener("click",start);
+  document.getElementById("again").addEventListener("click",start);
+})();
+</script>
+</body>
+</html>
