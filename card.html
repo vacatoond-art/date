@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Это письмо тебе</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amatic+SC:wght@700&family=Caveat:wght@600&display=swap">
+<style>
+/* Layout: one postcard filling the phone screen, two scenes (sun with envelope, open envelope with hearts). Single pastel look by design. */
+:root{
+  --bg1:#f6dcd4;
+  --bg2:#e9d8c4;
+  --bg3:#d9cfe0;
+  --sun:#ffd95a;
+  --sun-deep:#f5b82e;
+  --paper:#fbf1e3;
+  --paper-line:#d8bfa0;
+  --red:#b3242f;
+  --red-ink:#8f1d27;
+  --white:#fffaf2;
+  --f-letter:"Amatic SC","Arial Narrow",system-ui,sans-serif;
+  --f-hand:"Caveat","Segoe Print","Comic Sans MS",cursive;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;height:100%;overflow:hidden}
+body{background:#2b2230;font-family:var(--f-hand);-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
+.card{position:fixed;inset:0;margin:auto;width:100%;height:100%;max-width:460px;max-height:920px;overflow:hidden;
+  background:
+    radial-gradient(60% 45% at 15% 10%,rgba(255,200,190,.9),transparent 70%),
+    radial-gradient(55% 40% at 90% 25%,rgba(210,200,235,.85),transparent 70%),
+    radial-gradient(60% 50% at 80% 90%,rgba(245,215,170,.9),transparent 70%),
+    radial-gradient(50% 45% at 10% 85%,rgba(225,190,215,.8),transparent 70%),
+    linear-gradient(160deg,var(--bg1),var(--bg2) 50%,var(--bg3));}
+@media (min-width:461px){.card{border-radius:28px;height:calc(100% - 48px);box-shadow:0 30px 80px rgba(0,0,0,.5)}}
+.grain{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:.35;mix-blend-mode:multiply}
+.scene{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+  padding-top:max(28px,env(safe-area-inset-top,0px));padding-bottom:max(28px,env(safe-area-inset-bottom,0px));
+  padding-left:max(18px,env(safe-area-inset-left,0px));padding-right:max(18px,env(safe-area-inset-right,0px));
+  transition:opacity .8s ease,transform .8s ease}
+.scene.out{opacity:0;transform:scale(.96);pointer-events:none}
+
+/* scene 1: the sun */
+.sunwrap{position:relative;width:min(84vw,360px);aspect-ratio:1/1;cursor:pointer;border:0;padding:0;background:none}
+.sunwrap:focus-visible{outline:3px solid var(--white);outline-offset:6px;border-radius:50%}
+.sunwrap svg{width:100%;height:100%;display:block;overflow:visible}
+.glow{animation:glow 3.2s ease-in-out infinite;transform-origin:150px 140px}
+@keyframes glow{50%{transform:scale(1.12);opacity:.65}}
+.rays{animation:spin 40s linear infinite;transform-origin:150px 140px}
+.rays line{stroke:var(--sun);stroke-width:7;stroke-linecap:round;animation:ray 2.4s ease-in-out infinite}
+.rays line:nth-child(odd){animation-delay:1.2s}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes ray{50%{opacity:.35}}
+.eye{animation:blink 4.5s infinite;transform-box:fill-box;transform-origin:center}
+@keyframes blink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.1)}}
+.bob{animation:bob 3s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-6px)}}
+.env-heart{animation:thump 1.2s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes thump{0%,100%{transform:scale(1)}20%{transform:scale(1.18)}40%{transform:scale(1)}}
+.title{font-family:var(--f-letter);font-weight:700;color:var(--white);font-size:clamp(58px,17vw,84px);line-height:.92;text-align:center;
+  margin:0;letter-spacing:.02em;text-shadow:0 2px 0 rgba(140,90,60,.25),0 6px 18px rgba(140,90,60,.25)}
+.tap{font-size:22px;color:#8a5a52;opacity:.85;animation:breathe 2.2s ease-in-out infinite;margin-top:4px}
+@keyframes breathe{50%{opacity:.4}}
+
+/* scene 2: open envelope */
+.words{position:relative;z-index:3;font-family:var(--f-letter);font-weight:700;color:var(--red-ink);text-align:center;
+  font-size:clamp(40px,11.5vw,58px);line-height:1;display:flex;flex-direction:column;align-items:center;gap:2px;margin-top:4vh}
+.words span{opacity:0;transform:translateY(10px) scale(.96);transition:opacity .7s ease,transform .7s cubic-bezier(.2,1.4,.4,1)}
+.words span.on{opacity:1;transform:none}
+.words .big{font-size:1.45em;letter-spacing:.04em}
+.sig{font-family:var(--f-hand);font-size:28px;color:var(--red);opacity:0;transition:opacity 1s ease;margin-top:10px}
+.sig.on{opacity:1}
+.envelope{position:relative;z-index:2;width:min(70vw,290px);margin-top:auto;margin-bottom:4vh}
+.envelope svg{width:100%;display:block;overflow:visible}
+.flap{transform-origin:145px 70px;transform:scaleY(1);transition:transform .9s cubic-bezier(.5,0,.3,1)}
+.open .flap{transform:scaleY(-1)}
+.peek{transform:translateY(60px);transition:transform 1.2s cubic-bezier(.2,1.3,.4,1) .7s}
+.open .peek{transform:translateY(0)}
+.hearts{position:absolute;inset:0;pointer-events:none;z-index:1;overflow:hidden}
+.hearts svg{position:absolute;left:0;top:0;will-change:transform,opacity}
+
+.music{position:absolute;z-index:6;right:max(14px,env(safe-area-inset-right,0px));top:max(14px,env(safe-area-inset-top,0px));
+  width:44px;height:44px;border-radius:50%;border:0;background:rgba(255,250,242,.7);color:var(--red-ink);font:22px/1 serif;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(140,90,60,.18)}
+.music.off{opacity:.55}
+.music.off::after{content:"";position:absolute;width:24px;height:2px;background:var(--red-ink);transform:rotate(-45deg)}
+.again{position:absolute;z-index:6;left:50%;bottom:max(10px,env(safe-area-inset-bottom,0px));transform:translateX(-50%);
+  border:0;background:none;color:#9a6a5f;font:22px var(--f-hand);cursor:pointer;padding:6px 12px}
+@media (prefers-reduced-motion:reduce){
+  .glow,.rays,.rays line,.eye,.bob,.env-heart,.tap{animation:none}
+}
+</style>
+</head>
+<body>
+<main class="card" id="card">
+  <svg class="grain" aria-hidden="true">
+    <filter id="g"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="5"/><feColorMatrix values="0 0 0 0 .5  0 0 0 0 .35  0 0 0 0 .3  0 0 0 .25 0"/></filter>
+    <rect width="100%" height="100%" filter="url(#g)"/>
+  </svg>
+
+  <section class="scene" id="s1">
+    <button class="sunwrap" id="open" aria-label="Открыть письмо">
+      <svg viewBox="0 0 300 300" aria-hidden="true">
+        <defs>
+          <radialGradient id="gl" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#fff3b0" stop-opacity=".95"/><stop offset=".55" stop-color="#ffe27a" stop-opacity=".45"/><stop offset="1" stop-color="#ffe27a" stop-opacity="0"/></radialGradient>
+          <radialGradient id="sb" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#fff1a8"/><stop offset=".7" stop-color="#ffd95a"/><stop offset="1" stop-color="#f5c13f"/></radialGradient>
+        </defs>
+        <circle class="glow" cx="150" cy="140" r="150" fill="url(#gl)"/>
+        <g class="rays">
+          <line x1="150" y1="2" x2="150" y2="22"/><line x1="219" y1="20" x2="209" y2="38"/><line x1="270" y1="71" x2="252" y2="81"/>
+          <line x1="288" y1="140" x2="268" y2="140"/><line x1="270" y1="209" x2="252" y2="199"/><line x1="219" y1="260" x2="209" y2="242"/>
+          <line x1="150" y1="278" x2="150" y2="258"/><line x1="81" y1="260" x2="91" y2="242"/><line x1="30" y1="209" x2="48" y2="199"/>
+          <line x1="12" y1="140" x2="32" y2="140"/><line x1="30" y1="71" x2="48" y2="81"/><line x1="81" y1="20" x2="91" y2="38"/>
+        </g>
+        <g class="bob">
+          <circle cx="150" cy="140" r="98" fill="url(#sb)"/>
+          <ellipse class="eye" cx="120" cy="118" rx="7.5" ry="10" fill="#7a5a2e"/>
+          <ellipse class="eye" cx="180" cy="118" rx="7.5" ry="10" fill="#7a5a2e"/>
+          <circle cx="117.5" cy="114" r="2.4" fill="#fff"/><circle cx="177.5" cy="114" r="2.4" fill="#fff"/>
+          <ellipse cx="98" cy="140" rx="14" ry="8" fill="#f4a39a" opacity=".75"/>
+          <ellipse cx="202" cy="140" rx="14" ry="8" fill="#f4a39a" opacity=".75"/>
+          <path d="M132 142 Q150 158 168 142" fill="none" stroke="#7a5a2e" stroke-width="4" stroke-linecap="round"/>
+          <g>
+            <rect x="92" y="168" width="116" height="78" rx="7" fill="#fbf1e3" stroke="#d8bfa0" stroke-width="2"/>
+            <path d="M94 171 L150 212 L206 171" fill="none" stroke="#d8bfa0" stroke-width="2.5" stroke-linejoin="round"/>
+            <path d="M94 244 L134 206 M206 244 L166 206" fill="none" stroke="#e6d2b8" stroke-width="2"/>
+            <path class="env-heart" d="M150 230 C 140 222, 132 216, 132 208 C 132 202, 137 199, 141 199 C 145 199, 148 202, 150 205 C 152 202, 155 199, 159 199 C 163 199, 168 202, 168 208 C 168 216, 160 222, 150 230 Z" fill="#b3242f"/>
+            <ellipse cx="88" cy="207" rx="17" ry="15" fill="#ffd95a" stroke="#f0b93a" stroke-width="2"/>
+            <ellipse cx="212" cy="207" rx="17" ry="15" fill="#ffd95a" stroke="#f0b93a" stroke-width="2"/>
+            <path d="M80 203 q6 -3 11 1 M80 210 q6 -3 11 1 M209 203 q6 -3 11 1 M209 210 q6 -3 11 1" fill="none" stroke="#f0b93a" stroke-width="1.6" stroke-linecap="round"/>
+          </g>
+        </g>
+      </svg>
+    </button>
+    <h1 class="title">Это письмо<br>тебе</h1>
+    <div class="tap">нажми на конверт</div>
+  </section>
+
+  <section class="scene out" id="s2" aria-live="polite">
+    <div class="hearts" id="hearts"></div>
+    <div class="words" id="words">
+      <span>Я благодарю тебя</span>
+      <span>за то, что ты есть</span>
+      <span>и очень</span>
+      <span class="big">тебя люблю</span>
+    </div>
+    <div class="sig" id="sig">Твой Питерский</div>
+    <div class="envelope" id="env">
+      <svg viewBox="0 0 290 210" aria-hidden="true">
+        <path class="flap" d="M8 70 L145 150 L282 70 Z" fill="#efe0c8" stroke="#d8bfa0" stroke-width="2" stroke-linejoin="round"/>
+        <rect x="8" y="70" width="274" height="134" rx="8" fill="#f3e6d1" stroke="#d8bfa0" stroke-width="2"/>
+        <g class="peek"><path d="M145 168 C 112 146, 86 124, 86 96 C 86 76, 100 64, 116 64 C 129 64, 139 72, 145 84 C 151 72, 161 64, 174 64 C 190 64, 204 76, 204 96 C 204 124, 178 146, 145 168 Z" fill="#b3242f"/></g>
+        <path d="M8 76 L8 196 Q8 204 16 204 L274 204 Q282 204 282 196 L282 76 L145 150 Z" fill="#fbf1e3" stroke="#d8bfa0" stroke-width="2" stroke-linejoin="round"/>
+        <path d="M14 200 L120 136 M276 200 L170 136" fill="none" stroke="#e6d2b8" stroke-width="2"/>
+      </svg>
+    </div>
+    <button class="again" id="again" hidden>открыть ещё раз</button>
+  </section>
+
+  <button class="music" id="music" hidden aria-label="Выключить музыку">&#9835;</button>
+</main>
+
+<script>
+(function(){
+  var s1=document.getElementById("s1"), s2=document.getElementById("s2"), env=document.getElementById("env");
+  var hearts=document.getElementById("hearts"), words=[].slice.call(document.querySelectorAll("#words span"));
+  var sig=document.getElementById("sig"), again=document.getElementById("again"), btn=document.getElementById("music");
+  var reduce=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var opened=false, spawnTimer=null, timers=[];
+  var REDS=["#b3242f","#c8323d","#9e1c28","#d24a55","#b3242f"];
+
+  function heartSVG(size,color){
+    var ns="http://www.w3.org/2000/svg", s=document.createElementNS(ns,"svg");
+    s.setAttribute("viewBox","0 0 24 22"); s.setAttribute("width",size); s.setAttribute("height",size*0.92);
+    var p=document.createElementNS(ns,"path");
+    p.setAttribute("d","M12 21C5 16 1 12 1 7a5.5 5.5 0 0 1 11-1.5A5.5 5.5 0 0 1 23 7c0 5-4 9-11 14z"); p.setAttribute("fill",color);
+    s.appendChild(p); return s;
+  }
+  function launch(){
+    var box=s2.getBoundingClientRect(), e=env.getBoundingClientRect();
+    var size=14+Math.random()*34, x0=e.left-box.left+e.width*(0.3+Math.random()*0.4)-size/2, y0=e.top-box.top+e.height*0.35;
+    var h=heartSVG(size,REDS[Math.floor(Math.random()*REDS.length)]); hearts.appendChild(h);
+    var dx=(Math.random()*2-1)*box.width*0.45, rise=box.height*(0.55+Math.random()*0.35), rot=(Math.random()*2-1)*30, dur=3200+Math.random()*2200;
+    var a=h.animate([
+      {transform:"translate("+x0+"px,"+y0+"px) scale(.3) rotate(0deg)",opacity:0},
+      {transform:"translate("+(x0+dx*0.3)+"px,"+(y0-rise*0.25)+"px) scale(1) rotate("+(rot*0.4)+"deg)",opacity:.95,offset:.2},
+      {transform:"translate("+(x0+dx*0.8)+"px,"+(y0-rise*0.75)+"px) scale(1) rotate("+(-rot*0.5)+"deg)",opacity:.85,offset:.75},
+      {transform:"translate("+(x0+dx)+"px,"+(y0-rise)+"px) scale(.9) rotate("+rot+"deg)",opacity:0}
+    ],{duration:dur,easing:"cubic-bezier(.25,.6,.4,1)"});
+    a.onfinish=function(){h.remove()};
+  }
+  function burst(n){for(var i=0;i<n;i++)timers.push(setTimeout(launch,i*70))}
+
+  function open(){
+    if(opened)return; opened=true; startMusic();
+    s1.classList.add("out"); s2.classList.remove("out");
+    timers.push(setTimeout(function(){env.classList.add("open")},500));
+    if(!reduce){
+      timers.push(setTimeout(function(){burst(14)},1300));
+      timers.push(setTimeout(function(){spawnTimer=setInterval(launch,420)},2300));
+    }
+    words.forEach(function(w,i){timers.push(setTimeout(function(){w.classList.add("on")},1800+i*700))});
+    timers.push(setTimeout(function(){sig.classList.add("on"); again.hidden=false},1800+words.length*700+400));
+  }
+  function reset(){
+    timers.forEach(clearTimeout); timers=[]; clearInterval(spawnTimer); hearts.innerHTML="";
+    env.classList.remove("open"); words.forEach(function(w){w.classList.remove("on")}); sig.classList.remove("on"); again.hidden=true;
+    s2.classList.add("out"); s1.classList.remove("out"); opened=false;
+  }
+  document.getElementById("open").addEventListener("click",open);
+  again.addEventListener("click",function(){reset(); setTimeout(open,900)});
+  document.addEventListener("visibilitychange",function(){
+    if(document.hidden){clearInterval(spawnTimer); spawnTimer=null; if(ctx)ctx.suspend()}
+    else{ if(opened&&!spawnTimer&&!reduce&&env.classList.contains("open"))spawnTimer=setInterval(launch,420); if(ctx&&on)ctx.resume() }
+  });
+
+  /* music: original cheerful music-box tune, 4/4 */
+  var ctx=null, master=null, next=0, step=0, on=true, BEAT=0.46;
+  var MEL=[[[72,.5],[74,.5],[76,1],[79,1],[76,1]],[[77,.5],[76,.5],[74,1],[72,2]],
+           [[74,.5],[76,.5],[77,1],[81,1],[79,1]],[[79,1.5],[77,.5],[76,2]],
+           [[72,.5],[74,.5],[76,1],[79,1],[84,1]],[[81,.5],[79,.5],[77,1],[76,2]],
+           [[74,1],[77,1],[76,1],[74,1]],[[72,3],[79,.5],[76,.5]]];
+  var CH=[[48,55,64],[41,48,57],[41,48,57],[48,55,64],[48,55,64],[41,48,57],[43,50,59],[48,55,64]];
+  function hz(m){return 440*Math.pow(2,(m-69)/12)}
+  function bell(t,m,v,dec){
+    var g=ctx.createGain(); g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(v,t+0.005); g.gain.exponentialRampToValueAtTime(0.0001,t+dec); g.connect(master);
+    [[1,1],[2,0.25],[3.98,0.07]].forEach(function(p){var o=ctx.createOscillator(),og=ctx.createGain();o.type="sine";o.frequency.value=hz(m)*p[0];og.gain.value=p[1];o.connect(og);og.connect(g);o.start(t);o.stop(t+dec+0.05)});
+  }
+  function pluck(t,m,v,dec){
+    var o=ctx.createOscillator(),f=ctx.createBiquadFilter(),g=ctx.createGain();
+    o.type="triangle";o.frequency.value=hz(m);f.type="lowpass";f.frequency.value=1100;
+    g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(v,t+0.01);g.gain.exponentialRampToValueAtTime(0.0001,t+dec);
+    o.connect(f);f.connect(g);g.connect(master);o.start(t);o.stop(t+dec+0.05);
+  }
+  function bar(i,t){
+    var c=CH[i%CH.length];
+    pluck(t,c[0],0.18,0.9); pluck(t+BEAT,c[2],0.07,0.4); pluck(t+BEAT*2,c[1],0.11,0.7); pluck(t+BEAT*3,c[2],0.07,0.4);
+    var x=0; MEL[i%MEL.length].forEach(function(n){bell(t+x*BEAT,n[0],0.17,1.6); x+=n[1]});
+  }
+  function tick(){while(next<ctx.currentTime+0.7){bar(step,next);next+=BEAT*4;step++}}
+  function startMusic(){
+    if(ctx){if(on)ctx.resume();return}
+    try{
+      var AC=window.AudioContext||window.webkitAudioContext; if(!AC)return;
+      ctx=new AC(); master=ctx.createGain(); master.gain.value=0.0001;
+      var len=ctx.sampleRate*1.8, b=ctx.createBuffer(2,len,ctx.sampleRate);
+      for(var ch=0;ch<2;ch++){var d=b.getChannelData(ch);for(var i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,3)}
+      var cv=ctx.createConvolver(); cv.buffer=b; var wet=ctx.createGain(); wet.gain.value=0.3;
+      master.connect(ctx.destination); master.connect(cv); cv.connect(wet); wet.connect(ctx.destination);
+      master.gain.exponentialRampToValueAtTime(0.5,ctx.currentTime+1.5);
+      next=ctx.currentTime+0.2; tick(); setInterval(tick,200); btn.hidden=false;
+    }catch(e){}
+  }
+  btn.addEventListener("click",function(){
+    if(!ctx)return; on=!on;
+    if(on){ctx.resume();btn.classList.remove("off");btn.setAttribute("aria-label","Выключить музыку")}
+    else{ctx.suspend();btn.classList.add("off");btn.setAttribute("aria-label","Включить музыку")}
+  });
+})();
+</script>
+</body>
+</html>
