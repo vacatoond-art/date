@@ -214,8 +214,8 @@ body{background:#2b2230;font-family:var(--f-hand);-webkit-tap-highlight-color:tr
   document.getElementById("open").addEventListener("click",open);
   again.addEventListener("click",function(){reset(); setTimeout(open,900)});
   document.addEventListener("visibilitychange",function(){
-    if(document.hidden){clearInterval(spawnTimer); spawnTimer=null; if(ctx)ctx.suspend()}
-    else{ if(opened&&!spawnTimer&&!reduce&&env.classList.contains("open"))spawnTimer=setInterval(launch,420); if(ctx&&on)ctx.resume() }
+    if(document.hidden){clearInterval(spawnTimer); spawnTimer=null; if(ctx)ctx.suspend(); if(song)song.pause()}
+    else{ if(opened&&!spawnTimer&&!reduce&&env.classList.contains("open"))spawnTimer=setInterval(launch,420); if(ctx&&on)ctx.resume(); if(song&&on&&opened)song.play().catch(function(){}) }
   });
 
   /* music: original cheerful music-box tune, 4/4 */
@@ -242,7 +242,15 @@ body{background:#2b2230;font-family:var(--f-hand);-webkit-tap-highlight-color:tr
     var x=0; MEL[i%MEL.length].forEach(function(n){bell(t+x*BEAT,n[0],0.17,1.6); x+=n[1]});
   }
   function tick(){while(next<ctx.currentTime+0.7){bar(step,next);next+=BEAT*4;step++}}
+  var song=null;
   function startMusic(){
+    if(song){if(on)song.play().catch(function(){});return}
+    try{
+      song=new Audio("card-song.mp3"); song.loop=true; song.volume=0.9;
+      song.play().then(function(){btn.hidden=false}).catch(function(){song=null;startSynth()});
+    }catch(e){song=null;startSynth()}
+  }
+  function startSynth(){
     if(ctx){if(on)ctx.resume();return}
     try{
       var AC=window.AudioContext||window.webkitAudioContext; if(!AC)return;
@@ -256,9 +264,10 @@ body{background:#2b2230;font-family:var(--f-hand);-webkit-tap-highlight-color:tr
     }catch(e){}
   }
   btn.addEventListener("click",function(){
-    if(!ctx)return; on=!on;
-    if(on){ctx.resume();btn.classList.remove("off");btn.setAttribute("aria-label","Выключить музыку")}
-    else{ctx.suspend();btn.classList.add("off");btn.setAttribute("aria-label","Включить музыку")}
+    if(!ctx&&!song)return; on=!on;
+    if(song){if(on)song.play().catch(function(){});else song.pause()}
+    if(on){if(ctx)ctx.resume();btn.classList.remove("off");btn.setAttribute("aria-label","Выключить музыку")}
+    else{if(ctx)ctx.suspend();btn.classList.add("off");btn.setAttribute("aria-label","Включить музыку")}
   });
 })();
 </script>
